@@ -1,0 +1,4 @@
+//include(":netting")
+//include(":common")
+//project(":common").projectDir = new File("/Users/quangpv/Desktop/CordaProjects/onehypernet/cordapp/common")
+//project(":netting").projectDir = new File("/Users/quangpv/Desktop/CordaProjects/onehypernet/cordapp/conclave/netting")

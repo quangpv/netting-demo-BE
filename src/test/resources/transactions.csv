@@ -1,0 +1,4 @@
+Date, Due Date, Id, Type, Counter Party, Currency, Amount
+2022-01-01, 2022-01-01, TX01, Payable, Test1, SGD, 2400
+2022-01-01, 2022-01-01, TX02, Receivable, Test2, VND, 5000000
+2022-01-01, 2022-01-01, TX03, Payable, Test3, INR, 12000
