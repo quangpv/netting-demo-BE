@@ -60,6 +60,8 @@ class GetNettingCycleByIdCmd(
 
         nettedTransactions.forEach {
             val localAmount = reportCalculator.getLocalAmount(it)
+            val feeAmount = reportCalculator.getFeeAmount(it)
+
             if (it.transactionType == TransactionType.Receivable) {
                 receivable.amount += localAmount
                 receivable.numOfTransactions += 1
@@ -68,6 +70,7 @@ class GetNettingCycleByIdCmd(
                 payable.amount += localAmount
                 payable.numOfTransactions += 1
                 payableCounterParty.add(it.counterParty)
+                savingFee.before += feeAmount
             }
             counterParties.add(it.counterParty)
 
@@ -79,11 +82,10 @@ class GetNettingCycleByIdCmd(
                     type = it.transactionType,
                     counterParty = it.counterParty,
                     billAmount = Amount(it.currency, it.amount),
-                    localAmount = Amount(ourCurrency, it.amount),
-                    feeSaved = Amount(ourCurrency, 0.0.toBigDecimal())
+                    localAmount = Amount(ourCurrency, localAmount),
+                    feeSaved = Amount(ourCurrency, feeAmount)
                 )
             )
-            savingFee.before += reportCalculator.getFeeAmount(it)
         }
         receivable.numOfCounterParties = receivableCounterParty.size
         payable.numOfCounterParties = payableCounterParty.size
