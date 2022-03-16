@@ -1,12 +1,27 @@
 package com.onehypernet.demo.helper
 
 import com.onehypernet.demo.extension.throws
+import com.onehypernet.demo.model.entity.NettedTransactionEntity
 import com.onehypernet.demo.model.entity.NettingParamEntity
+import com.onehypernet.demo.model.entity.ReportParamEntity
 import java.math.BigDecimal
+import kotlin.math.log
 
 interface ReportCalculator {
     fun getLocalAmount(amount: BigDecimal, currency: String): BigDecimal
     fun getFeeAmount(amount: BigDecimal, currency: String): BigDecimal
+    fun getLocalAmount(entity: NettedTransactionEntity): BigDecimal {
+        return getLocalAmount(entity.amount, entity.currency)
+    }
+
+    fun getFeeAmount(entity: NettedTransactionEntity): BigDecimal {
+        return getFeeAmount(entity.amount, entity.currency)
+    }
+
+    fun getFeeAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
+    fun getSavingAmount(before: BigDecimal, after: BigDecimal): BigDecimal
+    fun getCashAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
+    fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double
 }
 
 class ReportCalculatorImpl(
@@ -32,6 +47,18 @@ class ReportCalculatorImpl(
         return BigDecimal.valueOf(localAmount * param.margin / 100 + vFee + param.fixedFee)
     }
 
+    override fun getFeeAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal {
+        return before * BigDecimal(param.savingFeePercent / 100)
+    }
+
+    override fun getSavingAmount(before: BigDecimal, after: BigDecimal): BigDecimal {
+        return before - after
+    }
+
+    override fun getCashAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal {
+        return before * BigDecimal(param.savingCashPercent / 100)
+    }
+
     private fun nettingParamOf(fromCurrency: String, toCurrency: String): NettingParamEntity {
         if (fromCurrency == toCurrency) return NettingParamEntity()
         return mLookup[keyOf(fromCurrency, toCurrency)]
@@ -51,5 +78,11 @@ class ReportCalculatorImpl(
 
     private fun keyOf(fromCurrency: String, toCurrency: String): String {
         return "${fromCurrency}#${toCurrency}"
+    }
+
+    override fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double {
+        return 0.35 * (savingCash + savingFee).toDouble() + (0.3 * minOf(
+            log(transactionCount.toDouble(), 300.0), 0.95
+        ))
     }
 }

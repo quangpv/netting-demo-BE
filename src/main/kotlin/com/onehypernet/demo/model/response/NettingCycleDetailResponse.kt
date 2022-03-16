@@ -21,6 +21,9 @@ data class NettingCycleDetailResponse(
 
     val savingFee: EstimatedSavingResponse? = null,
     val savingCash: EstimatedSavingResponse? = null,
+    /**
+     * 35% * fee_savings + 35% * cashflow_savings + 30% * min of (log(transaction count uploaded by user) or 95%)
+     */
     val potential: Double? = null,
 
     val summary: SummaryReportResponse? = null,
@@ -29,26 +32,29 @@ data class NettingCycleDetailResponse(
 )
 
 data class NettedReportResponse(
-    val amount: BigDecimal = BigDecimal(0.0),
-    val numOfTransactions: Int = 0,
-    val numOfCounterParties: Int = 0
+    var amount: BigDecimal = BigDecimal(0.0),
+    var numOfTransactions: Int = 0,
+    var numOfCounterParties: Int = 0
 )
 
 data class EstimatedSavingResponse(
-    val before: BigDecimal = BigDecimal.valueOf(0.0),
-    val after: BigDecimal = BigDecimal.valueOf(0.0),
-    val savingAmount: BigDecimal = BigDecimal.valueOf(0.0),
-    val savingPercent: Double = 0.0,
+    var before: BigDecimal = BigDecimal.valueOf(0.0),
+    /**
+     * Randomise savings between 50 to 92% of before
+     */
+    var after: BigDecimal = BigDecimal.valueOf(0.0),
+    var savingAmount: BigDecimal = BigDecimal.valueOf(0.0),
+    var savingPercent: Double = 0.0,
 )
 
 data class BeforeAfterResponse(
-    val before: BigDecimal = BigDecimal.valueOf(0.0),
-    val after: BigDecimal = BigDecimal.valueOf(0.0)
+    var before: BigDecimal = BigDecimal.valueOf(0.0),
+    var after: BigDecimal = BigDecimal.valueOf(0.0)
 )
 
 data class SummaryReportResponse(
-    val transactions: BeforeAfterResponse = BeforeAfterResponse(),
-    val currencies: BeforeAfterResponse = BeforeAfterResponse(),
-    val fees: BeforeAfterResponse = BeforeAfterResponse(),
-    val cashOutFlow: BeforeAfterResponse = BeforeAfterResponse(),
+    var transactions: BeforeAfterResponse = BeforeAfterResponse(),
+    var currencies: BeforeAfterResponse = BeforeAfterResponse(),
+    var fees: BeforeAfterResponse = BeforeAfterResponse(),
+    var cashOutFlow: BeforeAfterResponse = BeforeAfterResponse(),
 )

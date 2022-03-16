@@ -7,6 +7,7 @@ import com.onehypernet.demo.model.factory.UploadedTransactionFactory
 import com.onehypernet.demo.repository.NettedTransactionRepository
 import com.onehypernet.demo.repository.NettingCycleRepository
 import com.onehypernet.demo.repository.TransactionFileRepository
+import com.onehypernet.demo.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import javax.transaction.Transactional
@@ -18,10 +19,12 @@ open class UploadTransactionCmd(
     private val transactionFileRepository: TransactionFileRepository,
     private val nettedTransactionRepository: NettedTransactionRepository,
     private val nettingCycleRepository: NettingCycleRepository,
+    private val userRepository: UserRepository
 ) {
     @Transactional
     open operator fun invoke(file: MultipartFile, userId: String, nettingId: String) {
         validator.checkNettingId(nettingId)
+
         val nettingCycle = nettingCycleRepository.requireById(nettingId)
         validator.requireOpening(nettingCycle)
 
