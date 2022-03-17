@@ -13,9 +13,9 @@ data class NettingOverviewResponse(
 )
 
 class SavedOverviewResponse(
-    val savedInMonth: BigDecimal,
-    val savedYTD: BigDecimal,
-    val savedList: List<SavedByMonthResponse>
+    var savedInMonth: BigDecimal = BigDecimal(0.0),
+    var savedYTD: BigDecimal = BigDecimal(0.0),
+    var savedList: ArrayList<SavedByMonthResponse> = ArrayList()
 )
 
 class SavedByMonthResponse(

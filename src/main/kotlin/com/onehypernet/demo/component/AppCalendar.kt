@@ -17,9 +17,9 @@ class AppCalendar {
         return DateTimeFormatter.ofPattern("yyyy-MM-dd").let { LocalDate.parse(date, it).atStartOfDay() }
     }
 
-    fun getPreviousMonths(amount: Int): List<LocalDate> {
+    fun getPreviousMonths(amount: Int, skip: Int = 1): List<LocalDate> {
         val now = LocalDate.now(ZoneId.of("UTC")).withDayOfMonth(1)
-        return (1..amount).map { now.plusMonths(-it.toLong()) }.reversed()
+        return (1..amount).map { now.plusMonths(-(it + skip).toLong()) }.reversed()
     }
 
     fun nowDate(): LocalDate {

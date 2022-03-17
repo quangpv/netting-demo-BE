@@ -34,7 +34,7 @@ class NettingParamEntity(
     var fixedFee: Double = 0.0,
 
     @Column(name = "exchange_rate")
-    var exchangeRate: Double = 0.0,
+    var exchangeRate: Double = 1.0,
 
     @Column(name = "at_location")
     var atLocationCode: String = "",

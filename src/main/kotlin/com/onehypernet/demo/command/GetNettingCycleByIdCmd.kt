@@ -1,14 +1,14 @@
 package com.onehypernet.demo.command
 
 import com.onehypernet.demo.AppConst
-import com.onehypernet.demo.component.TextFormatter
+import com.onehypernet.demo.component.AppFormatter
 import com.onehypernet.demo.datasource.NettingCycleDao
 import com.onehypernet.demo.extension.throws
-import com.onehypernet.demo.helper.ReportCalculator
-import com.onehypernet.demo.model.enumerate.TransactionType
+import com.onehypernet.demo.helper.ReportCalculatorImpl
+import com.onehypernet.demo.model.enumerate.NettingStatus
 import com.onehypernet.demo.model.response.*
 import com.onehypernet.demo.repository.NettedTransactionRepository
-import com.onehypernet.demo.repository.ReportParamRepository
+import com.onehypernet.demo.repository.NettingReportRepository
 import com.onehypernet.demo.repository.TransactionFileRepository
 import com.onehypernet.demo.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -21,16 +21,16 @@ class GetNettingCycleByIdCmd(
     private val nettingCycleDao: NettingCycleDao,
     private val nettedTransactionRepository: NettedTransactionRepository,
     private val userRepository: UserRepository,
-    private val textFormatter: TextFormatter,
+    private val appFormatter: AppFormatter,
     private val fileRepository: TransactionFileRepository,
-    private val reportCalculator: ReportCalculator,
-    private val reportParamRepository: ReportParamRepository
+    private val nettingReportRepository: NettingReportRepository
 ) {
     operator fun invoke(userId: String, nettingId: String): NettingCycleDetailResponse {
         val netting = nettingCycleDao.findByIdOrNull(nettingId) ?: throws("Not found netting id $nettingId")
         val nettedTransactions = nettedTransactionRepository.findAllByNettingId(nettingId)
         val user = userRepository.findById(userId).get().detail
         val ourCurrency = user?.currency ?: AppConst.BRIDGING_CURRENCY
+        val reportCalculator = ReportCalculatorImpl()
 
         val uploadedFileEntity = fileRepository.findByUserAndNetting(userId, nettingId)
         val uploadedFile = uploadedFileEntity?.let { File(it.storedFileName) }
@@ -43,106 +43,104 @@ class GetNettingCycleByIdCmd(
                 uploadedFileEntity.storedFileName
             )
         } else null
-
-        val receivableCounterParty = hashSetOf<String>()
-        val payableCounterParty = hashSetOf<String>()
-        val counterParties = hashSetOf<String>()
-        val currencies = hashSetOf<String>()
-        val transactionCount = nettedTransactions.size
-
-        val receivable = NettedReportResponse()
-        val payable = NettedReportResponse()
-        val transactionList = ArrayList<NettedTransactionResponse>(nettedTransactions.size)
-        val savingFee = EstimatedSavingResponse()
-        val savingCash = EstimatedSavingResponse()
-        val reportParam = reportParamRepository.findOrCreate(nettingId)
-        val summary = SummaryReportResponse()
-
-        nettedTransactions.forEach {
-            val localAmount = reportCalculator.getLocalAmount(it)
-            val feeAmount = reportCalculator.getFeeAmount(it)
-
-            if (it.transactionType == TransactionType.Receivable) {
-                receivable.amount += localAmount
-                receivable.numOfTransactions += 1
-                receivableCounterParty.add(it.counterParty)
-            } else {
-                payable.amount += localAmount
-                payable.numOfTransactions += 1
-                payableCounterParty.add(it.counterParty)
-                savingFee.before += feeAmount
-            }
-            counterParties.add(it.counterParty)
-
-            transactionList.add(
-                NettedTransactionResponse(
-                    date = textFormatter.formatDate(it.date),
-                    dueDate = textFormatter.formatDate(it.dueDate),
-                    transactionId = it.id,
-                    type = it.transactionType,
-                    counterParty = it.counterParty,
-                    billAmount = Amount(it.currency, it.amount),
-                    localAmount = Amount(ourCurrency, localAmount),
-                    feeSaved = Amount(ourCurrency, feeAmount)
-                )
-            )
-        }
-        receivable.numOfCounterParties = receivableCounterParty.size
-        payable.numOfCounterParties = payableCounterParty.size
-        savingCash.before = payable.amount
-
-        with(savingFee) {
-            after = reportCalculator.getFeeAfterAmount(before, reportParam)
-            savingAmount = reportCalculator.getSavingAmount(before, after)
-            savingPercent = reportParam.savingFeePercent
+        val reportFile = uploadedFileResponse?.let {
+            FileResponse("$nettingId.pdf", 0, "pdf", "$nettingId.pdf")
         }
 
-        with(savingCash) {
-            after = reportCalculator.getCashAfterAmount(before, reportParam)
-            savingAmount = reportCalculator.getSavingAmount(before, after)
-            savingPercent = reportParam.savingCashPercent
-        }
+        val report = nettingReportRepository.findByIdOrNull(nettingId)
 
-        val netCashFlow = NettedReportResponse(
-            receivable.amount - payable.amount,
-            transactionCount,
-            counterParties.size
-        )
-        val potential = reportCalculator.getPotential(savingCash.savingAmount, savingFee.savingAmount, transactionCount)
-        summary.currencies.apply {
-            before = BigDecimal(currencies.size)
-            after = BigDecimal(1.0)
-        }
-        summary.transactions.apply {
-            before = BigDecimal(transactionCount)
-            after = BigDecimal(1.0)
-        }
-        summary.fees.apply {
-            before = savingFee.before
-            after = savingFee.after
-        }
-        summary.cashOutFlow.apply {
-            before = savingCash.before
-            after = savingCash.after
-        }
-
-        return NettingCycleDetailResponse(
+        val response = NettingCycleDetailResponse(
             id = nettingId,
             group = netting.nettingGroup,
             status = netting.status,
             currency = ourCurrency,
-            createAt = textFormatter.formatDate(netting.createAt),
-            settlementDate = null,
+            createAt = appFormatter.formatDate(netting.createAt),
+        )
+        if (netting.status == NettingStatus.None
+            || netting.status == NettingStatus.Open
+            || report == null
+        ) {
+            return response
+        }
+        val receivable = NettedReportResponse(
+            report.receiveAmount,
+            report.receiveTransactions,
+            report.numOfCounterPartyReceive
+        )
+        val payable = NettedReportResponse(
+            report.payAmount,
+            report.payTransactions,
+            report.numOfCounterPartyPay
+        )
+        val transactionCount = report.payTransactions + report.receiveTransactions
+        val cashFlow = NettedReportResponse(
+            report.receiveAmount - report.payAmount,
+            transactionCount,
+            report.numOfCounterParty
+        )
+        val savingFee = EstimatedSavingResponse(
+            before = report.totalFeeBefore,
+            after = report.totalFeeAfter,
+            savingAmount = report.totalFeeBefore - report.totalFeeAfter,
+            savingPercent = appFormatter.formatPercent((report.totalFeeAfter / report.totalFeeBefore).toDouble() * 100)
+        )
+
+        val savingCash = EstimatedSavingResponse(
+            before = report.totalCashBefore,
+            after = report.totalCashAfter,
+            savingAmount = report.totalCashBefore - report.totalCashAfter,
+            savingPercent = appFormatter.formatPercent((report.totalCashAfter / report.totalCashBefore).toDouble() * 100)
+        )
+
+        val summary = SummaryReportResponse(
+            transactions = BeforeAfterResponse(
+                BigDecimal(transactionCount),
+                BigDecimal(report.numOfTransactionAfter)
+            ),
+            currencies = BeforeAfterResponse(
+                BigDecimal(report.numOfCurrencyBefore),
+                BigDecimal(report.numOfTransactionAfter)
+            ),
+            fees = BeforeAfterResponse(
+                report.totalFeeBefore,
+                report.totalCashAfter
+            ),
+            cashOutFlow = BeforeAfterResponse(
+                report.totalCashBefore,
+                report.totalCashAfter
+            )
+        )
+        val settlementDate = if (netting.status == NettingStatus.Settled)
+            appFormatter.formatDate(netting.updateAt)
+        else null
+
+        return response.copy(
+            settlementDate = settlementDate,
             uploadedFile = uploadedFileResponse,
-            reportFile = FileResponse("$nettingId.pdf", 0, "pdf", "$nettingId.pdf"),
+            reportFile = reportFile,
             receivable = receivable,
             payable = payable,
-            netCashFlow = netCashFlow,
+            netCashFlow = cashFlow,
             savingFee = savingFee,
             savingCash = savingCash,
-            potential = potential,
+            potential = reportCalculator.getPotential(
+                savingCash.savingAmount,
+                savingFee.savingAmount,
+                transactionCount
+            ),
             summary = summary,
-            nettedTransactions = transactionList
+            nettedTransactions = nettedTransactions.map {
+                NettedTransactionResponse(
+                    date = appFormatter.formatDate(it.date),
+                    dueDate = appFormatter.formatDate(it.dueDate),
+                    transactionId = it.id,
+                    type = it.transactionType,
+                    counterParty = it.counterParty,
+                    billAmount = Amount(it.currency, it.amount),
+                    localAmount = Amount(ourCurrency, it.localAmount),
+                    feeSaved = Amount(ourCurrency, it.feeAmount),
+                )
+            }
         )
     }
 }

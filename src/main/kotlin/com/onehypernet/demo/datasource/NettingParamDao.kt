@@ -19,4 +19,11 @@ interface NettingParamDao : JpaRepository<NettingParamEntity, String> {
         nativeQuery = true
     )
     fun findAllByCurrentDay(): List<NettingParamEntity>
+
+    @Query(
+        "select * from NETTING_PARAM " +
+                "WHERE FORMATDATETIME(CREATE_AT,'yyyy-MM-dd') = ?1",
+        nativeQuery = true
+    )
+    fun findAllByDate(date: String): List<NettingParamEntity>
 }

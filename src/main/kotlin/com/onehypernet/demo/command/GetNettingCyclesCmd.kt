@@ -1,38 +1,40 @@
 package com.onehypernet.demo.command
 
 import com.onehypernet.demo.AppConst
+import com.onehypernet.demo.component.AppFormatter
 import com.onehypernet.demo.datasource.NettingCycleDao
-import com.onehypernet.demo.helper.ReportCalculatorImpl
-import com.onehypernet.demo.model.factory.NettingCycleFactory
+import com.onehypernet.demo.extension.safe
+import com.onehypernet.demo.model.entity.NettingCycleEntity
+import com.onehypernet.demo.model.entity.NettingReportEntity
+import com.onehypernet.demo.model.enumerate.NettingStatus
+import com.onehypernet.demo.model.enumerate.SettleStatus
 import com.onehypernet.demo.model.request.PagingRequest
+import com.onehypernet.demo.model.response.Amount
 import com.onehypernet.demo.model.response.ListResponse
 import com.onehypernet.demo.model.response.MetadataResponse
 import com.onehypernet.demo.model.response.NettingCycleResponse
-import com.onehypernet.demo.repository.NettedTransactionRepository
-import com.onehypernet.demo.repository.NettingParamRepository
+import com.onehypernet.demo.repository.NettingReportRepository
 import com.onehypernet.demo.repository.UserRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import kotlin.streams.toList
 
 @Service
 class GetNettingCyclesCmd(
     private val nettingCycleDao: NettingCycleDao,
-    private val nettingCycleFactory: NettingCycleFactory,
-    private val nettedTransactionRepository: NettedTransactionRepository,
-    private val nettingParamRepository: NettingParamRepository,
-    private val userRepository: UserRepository
+    private val nettingReportRepository: NettingReportRepository,
+    private val userRepository: UserRepository,
+    private val appFormatter: AppFormatter
 ) {
     operator fun invoke(request: PagingRequest, userId: String): ListResponse<NettingCycleResponse> {
         val result = nettingCycleDao.findAll(request.toPageRequest())
         val user = userRepository.findById(userId).get()
         val localCurrency = user.detail?.currency ?: AppConst.BRIDGING_CURRENCY
-        val calculator = ReportCalculatorImpl(
-            localCurrency,
-            nettingParamRepository.findAllByToday(),
-        )
+
         val data = result.stream().map {
-            val transactions = nettedTransactionRepository.findAllByNettingId(it.id)
-            nettingCycleFactory.create(localCurrency, it, transactions, calculator)
+            val report = nettingReportRepository.findByIdOrNull(it.id)
+            create(localCurrency, it, report)
         }.toList()
 
         val pageable = result.pageable
@@ -42,6 +44,33 @@ class GetNettingCyclesCmd(
                 pageable.pageNumber + 1,
                 result.totalElements.toInt()
             )
+        )
+    }
+
+    private fun create(
+        localCurrency: String,
+        entity: NettingCycleEntity,
+        report: NettingReportEntity?
+    ): NettingCycleResponse {
+        return NettingCycleResponse(
+            id = entity.id,
+            group = entity.nettingGroup,
+            status = entity.status,
+            createAt = appFormatter.formatDate(entity.createAt),
+            settlementDate = if (entity.status == NettingStatus.Settled)
+                appFormatter.formatDate(entity.updateAt)
+            else null,
+            receivable = Amount(localCurrency, report?.receiveAmount ?: BigDecimal(0.0)),
+            payable = Amount(localCurrency, report?.payAmount ?: BigDecimal(0.0)),
+            transactionCount = report?.let {
+                it.payTransactions + it.receiveTransactions
+            } ?: 0,
+            savingFee = Amount(localCurrency, report?.let {
+                it.totalFeeBefore - it.totalFeeAfter
+            }.safe(0.0)),
+            savingCash = Amount(localCurrency, report?.let {
+                it.totalCashBefore - it.totalCashAfter
+            }.safe(0.0))
         )
     }
 }

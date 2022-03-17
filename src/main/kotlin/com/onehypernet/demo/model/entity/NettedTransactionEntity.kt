@@ -22,6 +22,12 @@ class NettedTransactionEntity(
 
     var currency: String = "",
 
+    @Column(name = "local_amount")
+    var localAmount: BigDecimal = 0.0.toBigDecimal(),
+
+    @Column(name = "fee_amount")
+    var feeAmount: BigDecimal = 0.0.toBigDecimal(),
+
     @Column(name = "transaction_type")
     var transactionType: TransactionType = TransactionType.None,
 

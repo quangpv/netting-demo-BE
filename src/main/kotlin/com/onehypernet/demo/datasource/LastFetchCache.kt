@@ -15,7 +15,10 @@ class LastFetchCache(
 
     fun markAsLastFetch(key: String): Long {
         val currentTime = System.currentTimeMillis()
-        template.insert(key, LastFetchEntity(System.currentTimeMillis()))
+        val isFetched = template.findById(key, LastFetchEntity::class.java).isPresent
+        val lastFetch = LastFetchEntity(System.currentTimeMillis())
+        if (!isFetched) template.insert(key, lastFetch)
+        else template.update(key, lastFetch)
         return currentTime
     }
 }

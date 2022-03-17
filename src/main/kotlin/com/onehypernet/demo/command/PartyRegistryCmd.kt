@@ -1,9 +1,9 @@
 package com.onehypernet.demo.command
 
+import com.onehypernet.demo.AppConst
 import com.onehypernet.demo.component.security.JwtTokenProvider
 import com.onehypernet.demo.component.validator.Validator
 import com.onehypernet.demo.extension.throws
-import com.onehypernet.demo.model.entity.BankAccountEntity
 import com.onehypernet.demo.model.entity.UserDetailEntity
 import com.onehypernet.demo.model.entity.UserEntity
 import com.onehypernet.demo.model.enumerate.UserRole
@@ -21,26 +21,19 @@ class PartyRegistryCmd(
     operator fun invoke(request: PartyRegistryRequest): LoginResponse {
         validator.checkEmail(request.email)
         validator.requireNotAdminEmail(request.email)
-        validator.checkLocation(request.countryCode)
-        validator.checkCurrency(request.currency)
-        validator.requireNotBlank(request.bank.accountName) { "Bank account name" }
-        validator.requireNotBlank(request.bank.accountNumber) { "Bank account number" }
-        validator.requireNotBlank(request.bank.address) { "Bank address" }
-        validator.requireNotBlank(request.bank.swift) { "Bank swift" }
+//        validator.checkLocation(request.countryCode)
+//        validator.checkCurrency(request.currency)
+//        validator.requireNotBlank(request.bank.accountName) { "Bank account name" }
+//        validator.requireNotBlank(request.bank.accountNumber) { "Bank account number" }
+//        validator.requireNotBlank(request.bank.address) { "Bank address" }
+//        validator.requireNotBlank(request.bank.swift) { "Bank swift" }
 
         if (userRepository.findByEmail(request.email) != null)
             throws("Email ${request.email} exists")
-        val bank = BankAccountEntity(
-            accountNumber = request.bank.accountNumber,
-            accountName = request.bank.accountName,
-            address = request.bank.address,
-            swift = request.bank.swift
-        )
+
         val detail = UserDetailEntity(
             name = request.name,
-            countryCode = request.countryCode,
-            currency = request.currency,
-            bank = bank
+            currency = AppConst.BRIDGING_CURRENCY,
         )
         val user = UserEntity(
             email = request.email,
@@ -48,7 +41,6 @@ class PartyRegistryCmd(
             role = UserRole.Party,
             detail = detail
         )
-        bank.detail = detail
         detail.user = user
 
         val result = userRepository.save(user)

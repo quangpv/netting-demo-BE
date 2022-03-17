@@ -15,7 +15,7 @@ class UserDetailService : UserDetailsService {
     private lateinit var userRepository: UserRepository
 
     override fun loadUserByUsername(username: String): UserDetails {
-        val user = userRepository.findByIdOrNull(username) ?: throw UsernameNotFoundException("Invalid")
+        val user = userRepository.findByIdOrNull(username) ?: throw UsernameNotFoundException("Token invalid")
         val password: String = user.password
         val role: String = user.role.name
 

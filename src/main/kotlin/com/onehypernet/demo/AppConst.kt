@@ -4,7 +4,7 @@ package com.onehypernet.demo
 
 object AppConst {
     const val FOREX = "FOREX"
-    const val BRIDGING_CURRENCY = "USD"
+    const val BRIDGING_CURRENCY = "EUR"
 //    val DEFAULT_PARTIES = arrayOf(
 //        DefaultPartner("GENERATED_BANK_1", "Alliance 21 Pte. Ltd.", "SG", "SGD"),
 //        DefaultPartner("GENERATED_BANK_2", "Speed Road LLC", "US", "USD"),
