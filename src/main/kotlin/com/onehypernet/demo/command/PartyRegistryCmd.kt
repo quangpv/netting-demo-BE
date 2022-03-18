@@ -46,6 +46,6 @@ class PartyRegistryCmd(
         val result = userRepository.save(user)
 
         val token = tokenProvider.createToken(result.id, UserRole.Party)
-        return LoginResponse(token)
+        return LoginResponse(token, request.email, request.name)
     }
 }

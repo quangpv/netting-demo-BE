@@ -8,6 +8,7 @@ import com.onehypernet.demo.model.entity.NettingCycleEntity
 import com.onehypernet.demo.model.entity.NettingReportEntity
 import com.onehypernet.demo.model.enumerate.NettingStatus
 import com.onehypernet.demo.model.enumerate.SettleStatus
+import com.onehypernet.demo.model.enumerate.UserRole
 import com.onehypernet.demo.model.request.PagingRequest
 import com.onehypernet.demo.model.response.Amount
 import com.onehypernet.demo.model.response.ListResponse
@@ -28,9 +29,10 @@ class GetNettingCyclesCmd(
     private val appFormatter: AppFormatter
 ) {
     operator fun invoke(request: PagingRequest, userId: String): ListResponse<NettingCycleResponse> {
-        val result = nettingCycleDao.findAll(request.toPageRequest())
         val user = userRepository.findById(userId).get()
         val localCurrency = user.detail?.currency ?: AppConst.BRIDGING_CURRENCY
+        val result = if (user.role == UserRole.Admin) nettingCycleDao.findAll(request.toPageRequest())
+        else nettingCycleDao.findAllByUser(userId, request.toPageRequest())
 
         val data = result.stream().map {
             val report = nettingReportRepository.findByIdOrNull(it.id)

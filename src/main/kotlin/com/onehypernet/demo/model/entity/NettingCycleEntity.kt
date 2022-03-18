@@ -16,5 +16,5 @@ data class NettingCycleEntity(
     @Column(name = "create_at")
     var createAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "update_at")
-    var updateAt: LocalDateTime = LocalDateTime.now()
+    var updateAt: LocalDateTime = LocalDateTime.now(),
 )

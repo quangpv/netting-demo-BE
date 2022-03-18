@@ -25,6 +25,6 @@ class PartyLoginCmd(
         if (user.role == UserRole.Admin) throws("Please use admin api to login")
 
         val accessToken = tokenProvider.createToken(user.id, user.role)
-        return LoginResponse(accessToken)
+        return LoginResponse(accessToken, user.email, user.detail?.name ?: "Unknown")
     }
 }

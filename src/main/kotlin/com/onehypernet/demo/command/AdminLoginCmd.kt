@@ -40,7 +40,7 @@ class AdminLoginCmd(
         if (user == null) throw EmailOrPasswordNotFoundException()
 
         val accessToken = jwtTokenProvider.createToken(user.id, user.role)
-        return LoginResponse(accessToken)
+        return LoginResponse(accessToken, user.email, "Admin")
     }
 
     private fun createNewAdminUser(request: AccountRequest): UserEntity {
