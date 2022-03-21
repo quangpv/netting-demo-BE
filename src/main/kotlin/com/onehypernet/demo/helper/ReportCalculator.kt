@@ -32,8 +32,7 @@ class ReportCalculatorImpl : ReportCalculator {
     }
 
     override fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double {
-        return 0.35 * (savingCash + savingFee).toDouble() + (0.3 * minOf(
-            log(transactionCount.toDouble(), 300.0), 0.95
-        ))
+        val potential = 0.35 * (savingCash + savingFee).toDouble() + (0.3 * log(transactionCount.toDouble(), 300.0))
+        return minOf(potential, 0.95)
     }
 }
