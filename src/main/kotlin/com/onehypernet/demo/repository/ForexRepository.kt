@@ -32,11 +32,18 @@ class ForexRepository(
         lastFetchCache.markAsLastFetch(AppConst.FOREX)
     }
 
-    fun requireBy(fromCurrency: String, toCurrency: String): ForexEntity {
+    fun requireBy(_fromCurrency: String, _toCurrency: String): ForexEntity {
+        val fromCurrency = _fromCurrency.toUpperCase()
+        val toCurrency = _toCurrency.toUpperCase()
+
+        if (fromCurrency == toCurrency) return ForexEntity(
+            "${fromCurrency}${toCurrency}",
+            1.0
+        )
         var exchangeRate = findBy(fromCurrency, toCurrency)
         if (exchangeRate == null) {
             exchangeRate = ForexEntity(
-                "${fromCurrency.toUpperCase()}${toCurrency.toUpperCase()}",
+                "${fromCurrency}${toCurrency}",
                 getExchangeRate(fromCurrency, toCurrency)
             )
         }
