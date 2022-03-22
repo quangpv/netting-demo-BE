@@ -79,7 +79,7 @@ class GetNettingCycleByIdCmd(
             transactionCount,
             report.numOfCounterParty
         )
-        val savingFeePercent = (if (report.totalFeeBefore == BigDecimal(0.0)) 1.0
+        val savingFeePercent = (if (report.totalFeeBefore.compareTo(BigDecimal(0.0)) == 0) 1.0
         else (report.totalFeeAfter / report.totalFeeBefore)).toDouble() * 100
 
         val savingFee = EstimatedSavingResponse(
@@ -89,7 +89,7 @@ class GetNettingCycleByIdCmd(
             savingPercent = appFormatter.formatPercent(savingFeePercent)
         )
 
-        val savingCashPercent = (if (report.totalCashBefore == BigDecimal(0.0)) 1.0
+        val savingCashPercent = (if (report.totalCashBefore.compareTo(BigDecimal(0.0)) == 0) 1.0
         else report.totalCashAfter / report.totalCashBefore).toDouble() * 100
 
         val savingCash = EstimatedSavingResponse(
