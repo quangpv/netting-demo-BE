@@ -7,6 +7,8 @@ import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+
 
 @Component
 class AppFormatter {
@@ -32,4 +34,44 @@ class AppFormatter {
         return DecimalFormat("#0.00").format(percent).toDouble()
     }
 
+    fun formatTimeAgo(fromDateTime: LocalDateTime): String {
+        val toDateTime = LocalDateTime.now()
+
+        var tempDateTime = LocalDateTime.from(fromDateTime)
+
+        val years = tempDateTime.until(toDateTime, ChronoUnit.YEARS)
+        tempDateTime = tempDateTime.plusYears(years)
+
+        val months = tempDateTime.until(toDateTime, ChronoUnit.MONTHS)
+        tempDateTime = tempDateTime.plusMonths(months)
+
+        val days = tempDateTime.until(toDateTime, ChronoUnit.DAYS)
+        tempDateTime = tempDateTime.plusDays(days)
+
+        val hours = tempDateTime.until(toDateTime, ChronoUnit.HOURS)
+        tempDateTime = tempDateTime.plusHours(hours)
+
+        val minutes = tempDateTime.until(toDateTime, ChronoUnit.MINUTES)
+        tempDateTime = tempDateTime.plusMinutes(minutes)
+
+        val seconds = tempDateTime.until(toDateTime, ChronoUnit.SECONDS)
+        val builder = StringBuilder()
+
+        fun append(suffix: String, number: Long): Boolean {
+            if (number > 0) {
+                builder.append(" ").append(number).append(" $suffix")
+                return true
+            }
+            return false
+        }
+
+        var isAppended = append("years", years)
+        isAppended = isAppended || append("months", months)
+        isAppended = isAppended || append("days", days)
+        isAppended = isAppended || append("hours", hours)
+        isAppended = isAppended || append("minutes", minutes)
+//        append("seconds", seconds)
+        if (!isAppended) return "Just now"
+        return builder.trim().toString()
+    }
 }

@@ -8,13 +8,21 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class AppCalendar {
+    companion object {
+        const val DATE_PATTERN = "yyyy-MM-dd"
+        const val DATE_PATTERN1 = "dd-MM-yyyy"
+    }
 
     fun nowStr(): String {
         return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(nowDate())
     }
 
     fun dateOf(date: String): LocalDateTime {
-        return DateTimeFormatter.ofPattern("yyyy-MM-dd").let { LocalDate.parse(date, it).atStartOfDay() }
+        return try {
+            DateTimeFormatter.ofPattern(DATE_PATTERN).let { LocalDate.parse(date, it).atStartOfDay() }
+        } catch (e: Throwable) {
+            DateTimeFormatter.ofPattern(DATE_PATTERN1).let { LocalDate.parse(date, it).atStartOfDay() }
+        }
     }
 
     fun getPreviousMonths(amount: Int, skip: Int = 1): List<LocalDate> {

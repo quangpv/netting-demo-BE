@@ -33,7 +33,7 @@ class UploadedTransactionFactory(
                 type = type,
                 counterPartyName = counterParty,
                 currency = currency,
-                amount = amount
+                amount = amount,
             )
         }
 

@@ -8,10 +8,12 @@ import org.springframework.data.jpa.repository.Query
 
 interface NettingCycleDao : JpaRepository<NettingCycleEntity, String> {
     companion object {
-        const val FIND_ALL_BY_USER = "select * from NETTING_CYCLE netting where " +
-                "netting.STATUS = 1 or " +
-                "( netting.STATUS > 1 and " +
-                "exists(select ID from NETTING_REPORT report where report.ID = netting.ID and USER_ID=?1) )"
+        const val FIND_ALL_BY_USER = """
+            select * from NETTING_CYCLE netting where 
+                netting.STATUS = 1 or 
+                ( netting.STATUS > 1 and 
+                exists(select ID from NETTING_REPORT report where report.ID = netting.ID and USER_ID=?1) )
+        """
     }
 
     @Query(

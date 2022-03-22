@@ -23,6 +23,8 @@ open class UploadNettingParamsCmd(
         forexRepository.tryFetchAll()
         val params = csvReader.readStream(paramsStream) {
             val fromCurrency = it[0].trim()
+            if (fromCurrency.toLowerCase() == "from") return@readStream null
+
             val toCurrency = it[1].trim()
             val margin = it[2].toDoubleOrNull() ?: 0.0
             val fee = it[3].toDoubleOrNull() ?: 0.0
@@ -31,8 +33,6 @@ open class UploadNettingParamsCmd(
             val fixedFee = it[6].toDoubleOrNull() ?: 0.0
             val atLocation = it[7].trim()
             val destinationLocations = it[8].trim()
-
-            if (fromCurrency.toLowerCase() == "from") return@readStream null
 
             validator.checkCurrency(fromCurrency)
             validator.checkCurrency(toCurrency)

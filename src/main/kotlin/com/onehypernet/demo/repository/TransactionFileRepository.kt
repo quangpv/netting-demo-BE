@@ -7,11 +7,12 @@ import com.onehypernet.demo.model.entity.UploadedTransactionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
+import java.io.File
 
 @Component
 class TransactionFileRepository(
     private val uploadedTransactionFileDao: UploadedTransactionFileDao,
-    private val fileStorage: FileStorage
+    private val fileStorage: FileStorage,
 ) {
 
     fun save(userId: String, nettingId: String, file: MultipartFile) {
@@ -20,13 +21,17 @@ class TransactionFileRepository(
             nettingId = nettingId,
             userId = userId,
             fileName = file.originalFilename ?: "Unknown_${System.currentTimeMillis()}",
-            storedFileName = if (fileExt.isNotBlank()) "${userId}.${fileExt}" else userId
+            storedFileName = if (fileExt.isNotBlank()) "$nettingId.${fileExt}" else nettingId
         )
         uploadedTransactionFileDao.save(uploaded)
-        fileStorage.save(uploaded.nettingId, uploaded.storedFileName, file)
+        fileStorage.save(uploaded.userId, uploaded.storedFileName, file)
     }
 
     fun findByUserAndNetting(userId: String, nettingId: String): UploadedTransactionFileEntity? {
         return uploadedTransactionFileDao.findByIdOrNull(UploadedTransactionId(nettingId, userId))
+    }
+
+    fun getFile(userId: String, storedFileName: String): File {
+        return fileStorage.getFile(userId, storedFileName)
     }
 }

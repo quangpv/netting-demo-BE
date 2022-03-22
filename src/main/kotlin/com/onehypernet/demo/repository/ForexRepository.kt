@@ -52,6 +52,11 @@ class ForexRepository(
     }
 
     private fun getExchangeRate(fromCurrency: String, toCurrency: String): Double {
+        val f0 = findBy(toCurrency, fromCurrency)
+        if (f0 != null) {
+            return 1 / f0.exchangeRate
+        }
+
         val f1 = findBy(fromCurrency, AppConst.BRIDGING_CURRENCY)
         val t1 = findBy(AppConst.BRIDGING_CURRENCY, toCurrency)
         if (f1 != null && t1 != null) {

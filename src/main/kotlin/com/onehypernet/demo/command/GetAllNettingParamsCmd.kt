@@ -58,7 +58,8 @@ class GetAllNettingParamsCmd(
     }
 
     private fun hasIntersect(destinationLocations: String, filterDestinations: List<String>): Boolean {
-        return csvReader.readLine(destinationLocations).map { it.toUpperCase().trim() }
+        return csvReader.readLine(destinationLocations)
+            .map { it.toUpperCase().trim() }
             .intersect(filterDestinations).isNotEmpty()
     }
 

@@ -1,21 +1,15 @@
 package com.onehypernet.demo.helper
 
-import com.onehypernet.demo.extension.throws
-import com.onehypernet.demo.model.entity.NettedTransactionEntity
-import com.onehypernet.demo.model.entity.NettingParamEntity
 import com.onehypernet.demo.model.entity.ReportParamEntity
 import java.math.BigDecimal
 import kotlin.math.log
-import kotlin.random.Random
 
 interface ReportCalculator {
     fun getFeeAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
     fun getSavingAmount(before: BigDecimal, after: BigDecimal): BigDecimal
     fun getCashAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
     fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double
-
 }
-
 
 class ReportCalculatorImpl : ReportCalculator {
 

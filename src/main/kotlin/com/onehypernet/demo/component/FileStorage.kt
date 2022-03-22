@@ -9,8 +9,9 @@ import java.io.FileWriter
 
 
 interface FileStorage {
-    fun save(nettingId: String, fileName: String, file: MultipartFile)
-    fun save(nettingId: String, fileName: String, data: List<ICSVRecord>)
+    fun save(userId: String, fileName: String, file: MultipartFile)
+    fun save(userId: String, fileName: String, data: List<ICSVRecord>)
+    fun getFile(userId: String, fileName: String): File
 }
 
 @Component("FileStorage")
@@ -19,17 +20,21 @@ class LocalFileStorage : FileStorage {
         private const val FOLDER = "transactions"
     }
 
-    override fun save(nettingId: String, fileName: String, file: MultipartFile) {
-        File(getFolder(), fileName).writeBytes(file.inputStream.readAllBytes())
+    override fun save(userId: String, fileName: String, file: MultipartFile) {
+        File(getFolder(userId), fileName).writeBytes(file.inputStream.readAllBytes())
     }
 
-    private fun getFolder(): File {
-        return File(FOLDER).also { it.mkdirs() }
+    private fun getFolder(userId: String): File {
+        return File(FOLDER, userId).also { it.mkdirs() }
     }
 
-    override fun save(nettingId: String, fileName: String, data: List<ICSVRecord>) {
-        val writer = CSVWriter(FileWriter(File(getFolder(), fileName)))
+    override fun save(userId: String, fileName: String, data: List<ICSVRecord>) {
+        val writer = CSVWriter(FileWriter(File(getFolder(userId), fileName)))
         writer.writeAll(data.map { it.toRow() })
         writer.close()
+    }
+
+    override fun getFile(userId: String, fileName: String): File {
+        return File(getFolder(userId), fileName)
     }
 }

@@ -8,12 +8,10 @@ import com.onehypernet.demo.helper.ReportCalculatorImpl
 import com.onehypernet.demo.model.enumerate.NettingStatus
 import com.onehypernet.demo.model.response.*
 import com.onehypernet.demo.repository.NettedTransactionRepository
-import com.onehypernet.demo.repository.NettingReportRepository
 import com.onehypernet.demo.repository.TransactionFileRepository
 import com.onehypernet.demo.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.io.File
 import java.math.BigDecimal
 
 @Service
@@ -23,17 +21,20 @@ class GetNettingCycleByIdCmd(
     private val userRepository: UserRepository,
     private val appFormatter: AppFormatter,
     private val fileRepository: TransactionFileRepository,
-    private val nettingReportRepository: NettingReportRepository
 ) {
     operator fun invoke(userId: String, nettingId: String): NettingCycleDetailResponse {
         val netting = nettingCycleDao.findByIdOrNull(nettingId) ?: throws("Not found netting id $nettingId")
-        val nettedTransactions = nettedTransactionRepository.findAllByNettingId(nettingId)
+        val report = netting.report
+        if (report != null && report.userId != userId)
+            throws("You dont have permission to access netting id $netting")
+
+        val nettedTransactions = nettedTransactionRepository.findAllByNettingIdAndUserId(nettingId, userId)
         val user = userRepository.findById(userId).get().detail
         val ourCurrency = user?.currency ?: AppConst.BRIDGING_CURRENCY
         val reportCalculator = ReportCalculatorImpl()
 
         val uploadedFileEntity = fileRepository.findByUserAndNetting(userId, nettingId)
-        val uploadedFile = uploadedFileEntity?.let { File(it.storedFileName) }
+        val uploadedFile = uploadedFileEntity?.let { fileRepository.getFile(userId, it.storedFileName) }
 
         val uploadedFileResponse = if (uploadedFileEntity != null && uploadedFile != null) {
             FileResponse(
@@ -46,8 +47,6 @@ class GetNettingCycleByIdCmd(
         val reportFile = uploadedFileResponse?.let {
             FileResponse("$nettingId.pdf", 0, "pdf", "$nettingId.pdf")
         }
-
-        val report = nettingReportRepository.findByIdOrNull(nettingId)
 
         val response = NettingCycleDetailResponse(
             id = nettingId,

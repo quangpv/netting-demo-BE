@@ -38,9 +38,6 @@ open class UploadTransactionCmd(
         validator.requireOpening(nettingCycle)
 
         val transactions = uploadedTransactionFactory.createList(file.inputStream)
-        val nettedTransactionsExists = nettedTransactionRepository.findAllById(transactions.map { it.id })
-
-        validator.requireNotExists(nettedTransactionsExists)
 
         val converter = AmountConverterImpl(ourCurrency, nettingParamRepository.findAllByToday())
 
