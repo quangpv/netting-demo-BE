@@ -8,6 +8,7 @@ import com.onehypernet.demo.helper.ReportCalculatorImpl
 import com.onehypernet.demo.model.enumerate.NettingStatus
 import com.onehypernet.demo.model.response.*
 import com.onehypernet.demo.repository.NettedTransactionRepository
+import com.onehypernet.demo.repository.NettingReportRepository
 import com.onehypernet.demo.repository.TransactionFileRepository
 import com.onehypernet.demo.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -21,12 +22,13 @@ class GetNettingCycleByIdCmd(
     private val userRepository: UserRepository,
     private val appFormatter: AppFormatter,
     private val fileRepository: TransactionFileRepository,
+    private val nettingReportRepository: NettingReportRepository
 ) {
     operator fun invoke(userId: String, nettingId: String): NettingCycleDetailResponse {
         val netting = nettingCycleDao.findByIdOrNull(nettingId) ?: throws("Not found netting id $nettingId")
-        val report = netting.report
+        val report = nettingReportRepository.findByIdOrNull(nettingId)
         if (report != null && report.userId != userId)
-            throws("You dont have permission to access netting id $netting")
+            throws("You don't have permission to access netting id $netting")
 
         val nettedTransactions = nettedTransactionRepository.findAllByNettingIdAndUserId(nettingId, userId)
         val user = userRepository.findById(userId).get().detail

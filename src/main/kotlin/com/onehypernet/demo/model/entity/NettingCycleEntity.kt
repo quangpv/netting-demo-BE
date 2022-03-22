@@ -2,7 +2,9 @@ package com.onehypernet.demo.model.entity
 
 import com.onehypernet.demo.model.enumerate.NettingStatus
 import java.time.LocalDateTime
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
 
 @Entity(name = "netting_cycle")
 data class NettingCycleEntity(
@@ -19,8 +21,4 @@ data class NettingCycleEntity(
 
     @Column(name = "update_at")
     var updateAt: LocalDateTime = LocalDateTime.now(),
-
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true)
-    @PrimaryKeyJoinColumn(referencedColumnName = "id")
-    var report: NettingReportEntity? = null
 )
