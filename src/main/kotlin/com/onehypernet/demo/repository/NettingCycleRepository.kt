@@ -16,4 +16,8 @@ class NettingCycleRepository(private val nettingCycleDao: NettingCycleDao) {
     fun save(entity: NettingCycleEntity) {
         nettingCycleDao.save(entity)
     }
+
+    fun deleteById(id: String) {
+        return nettingCycleDao.deleteById(id)
+    }
 }

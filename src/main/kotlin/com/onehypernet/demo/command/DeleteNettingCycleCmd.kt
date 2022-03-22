@@ -1,16 +1,22 @@
 package com.onehypernet.demo.command
 
 import com.onehypernet.demo.component.validator.Validator
-import com.onehypernet.demo.datasource.NettingCycleDao
+import com.onehypernet.demo.repository.NettingCycleRepository
+import com.onehypernet.demo.repository.NettingReportRepository
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
-class DeleteNettingCycleCmd(
-    private val nettingCycleDao: NettingCycleDao,
-    private val validator: Validator
+open class DeleteNettingCycleCmd(
+    private val nettingCycleRepository: NettingCycleRepository,
+    private val validator: Validator,
+    private val nettingReportRepository: NettingReportRepository
 ) {
-    operator fun invoke(id: String) {
+
+    @Transactional
+    open operator fun invoke(id: String) {
         validator.checkNettingId(id)
-        nettingCycleDao.deleteById(id)
+        nettingReportRepository.deleteById(id)
+        nettingCycleRepository.deleteById(id)
     }
 }

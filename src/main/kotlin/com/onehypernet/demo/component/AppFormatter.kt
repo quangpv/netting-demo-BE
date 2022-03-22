@@ -12,9 +12,13 @@ import java.time.temporal.ChronoUnit
 
 @Component
 class AppFormatter {
+    companion object {
+        const val UTC_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    }
+
     fun formatDate(date: LocalDateTime): String {
         return DateTimeFormatter
-            .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+            .ofPattern(UTC_PATTERN)
             .format(date)
     }
 
@@ -73,5 +77,11 @@ class AppFormatter {
 //        append("seconds", seconds)
         if (!isAppended) return "Just now"
         return builder.trim().toString()
+    }
+
+    fun formatTimeAgo(fromDateTime: String?): String {
+        fromDateTime ?: return "Jut now"
+        val dateTime = LocalDateTime.parse(fromDateTime, DateTimeFormatter.ofPattern(UTC_PATTERN))
+        return formatTimeAgo(dateTime)
     }
 }

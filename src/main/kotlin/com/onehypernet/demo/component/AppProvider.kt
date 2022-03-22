@@ -3,6 +3,7 @@ package com.onehypernet.demo.component
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.onehypernet.demo.component.security.JwtTokenProvider
 import com.onehypernet.demo.datasource.ForexApi
+import com.onehypernet.demo.datasource.WiseApi
 import com.onehypernet.demo.guard.GuardInterceptor
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,7 +65,7 @@ open class AppProvider : WebMvcConfigurer {
     }
 
     @Bean
-    open fun forexApi(interceptor: ForexApiKeyInterceptor): ForexApi {
+    open fun retrofitBuilder(interceptor: ForexApiKeyInterceptor): Retrofit.Builder {
         return Retrofit.Builder()
             .client(
                 OkHttpClient.Builder()
@@ -72,8 +73,21 @@ open class AppProvider : WebMvcConfigurer {
                     .build()
             )
             .addConverterFactory(GsonConverterFactory.create())
+    }
+
+    @Bean
+    open fun forexApi(builder: Retrofit.Builder): ForexApi {
+        return builder
             .baseUrl("https://api.polygon.io/v2/")
             .build()
             .create(ForexApi::class.java)
+    }
+
+    @Bean
+    open fun wiseApi(builder: Retrofit.Builder): WiseApi {
+        return builder
+            .baseUrl("https://api.wise.com/v3/")
+            .build()
+            .create(WiseApi::class.java)
     }
 }
