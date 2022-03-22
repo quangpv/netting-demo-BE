@@ -3,7 +3,7 @@ package com.onehypernet.demo.model.response
 import java.math.BigDecimal
 
 data class RateCompareResponse(
-    val exchangeRate: Double,
+    val exchangeRate: BigDecimal,
     val lastTime: String,
     val invoiceCurrency: String,
     val homeCurrency: String,
@@ -12,7 +12,7 @@ data class RateCompareResponse(
 
 data class CompareItemResponse(
     val logo: String,
-    val exchangeRate: Double,
+    val exchangeRate: BigDecimal,
     val transferFee: BigDecimal,
     val totalPayment: BigDecimal,
     val loss: BigDecimal,

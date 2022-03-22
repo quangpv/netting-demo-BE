@@ -1,6 +1,5 @@
 package com.onehypernet.demo.command
 
-import com.onehypernet.demo.component.AppCalendar
 import com.onehypernet.demo.component.AppFormatter
 import com.onehypernet.demo.component.validator.Validator
 import com.onehypernet.demo.datasource.WiseApi
@@ -10,10 +9,10 @@ import com.onehypernet.demo.model.dto.ProviderDTO
 import com.onehypernet.demo.model.request.RateCompareRequest
 import com.onehypernet.demo.model.response.CompareItemResponse
 import com.onehypernet.demo.model.response.RateCompareResponse
-import com.onehypernet.demo.repository.ForexRepository
+import com.onehypernet.demo.repository.MarginRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 /**
  * Compare rates
@@ -32,6 +31,7 @@ look up EUR/SGD margin = 0.53%. sendAmount = InvoiceAmount/(interbank rate*(1-ma
 - ignore providers where partner: true
 Exchange Rate in UI = [rate], Transfer fee in UI = [fee], Total payment in UI
 - to calculate Total Payment = InvoiceAmount / rate + fee = 20500/(e.g. 1.517) + e.g. 31 = 13544.50
+
 - no need to calculate for Wise (id = 39) because Wise total payment is = sendAmount
 - OneHypernet total payment = InvoiceAmount / rate = 20500 / 1.52709 = 13424.23
 - to calculate Loss = Total Payment for provider - Total Payment by OneHypernet
@@ -39,45 +39,73 @@ Exchange Rate in UI = [rate], Transfer fee in UI = [fee], Total payment in UI
 @Service
 class CompareRateCmd(
     private val validator: Validator,
-    private val forexRepository: ForexRepository,
     private val appFormatter: AppFormatter,
     private val wiseApi: WiseApi,
-    private val appCalendar: AppCalendar
+    private val marginRepository: MarginRepository
 ) {
+    companion object {
+        const val INTERBANK_ID = 39L
+    }
+
     operator fun invoke(request: RateCompareRequest): RateCompareResponse {
         validator.checkCurrency(request.homeCurrency)
         validator.checkCurrency(request.invoiceCurrency)
 
         val wise = wiseApi.getRate(request.homeCurrency, request.invoiceCurrency, request.amount).call()
             ?: notFoundComparison(request)
-        val provider = wise.providers?.find { it.id == 39L }
+        val interbankRate = wise.providers
+            ?.find { it.id == INTERBANK_ID }
+            ?.quotes?.firstOrNull()?.rate?.let { BigDecimal(it) }
             ?: notFoundComparison(request)
 
-        val ohnComparison = createOHNComparison(provider, request)
-        val lastTime = appFormatter.formatTimeAgo(provider.quotes?.firstOrNull()?.dateCollected)
+        val margin = marginRepository
+            .findByIdOrNull("${request.homeCurrency.trim()}${request.invoiceCurrency.trim()}")
+            ?.percent
+            ?: throws("Not found margin ${request.homeCurrency}(Home) ${request.invoiceCurrency} (Invoice), Please request amin to upload margins")
+
+        val requestAmount = request.amount / (interbankRate * (BigDecimal.valueOf(1) - margin))
+
+        val wise1 = wiseApi.getRate(request.homeCurrency, request.invoiceCurrency, requestAmount).call()
+            ?: notFoundComparison(request)
+
+        val ohnProvider = wise1.providers?.find { it.id == INTERBANK_ID }
+            ?: notFoundComparison(request)
+
+        val providers = wise1.providers.filter { it.partner != true }
+        val ohnComparison = createComparison(ohnProvider, request) ?: notFoundComparison(request)
+        val lastTime = appFormatter.formatTimeAgo(ohnProvider.quotes?.firstOrNull()?.dateCollected)
+
         return RateCompareResponse(
             exchangeRate = ohnComparison.exchangeRate,
             lastTime = lastTime,
             invoiceCurrency = request.invoiceCurrency,
             homeCurrency = request.homeCurrency,
-            compares = listOf(
-                ohnComparison
-            )
+            compares = providers.mapNotNull {
+                createComparison(it, request, ohnComparison)
+            } + ohnComparison
         )
     }
 
     private fun notFoundComparison(request: RateCompareRequest): Nothing =
         throws("Not found comparison ${request.homeCurrency} to ${request.invoiceCurrency}")
 
-    private fun createOHNComparison(provider: ProviderDTO, request: RateCompareRequest): CompareItemResponse {
-        val rate = provider.quotes?.firstOrNull()?.rate ?: notFoundComparison(request)
+    private fun createComparison(
+        provider: ProviderDTO,
+        request: RateCompareRequest,
+        ohn: CompareItemResponse? = null
+    ): CompareItemResponse? {
+        val quotes = provider.quotes?.firstOrNull() ?: return null
+        val rate = quotes.rate ?: return null
+        val fee = BigDecimal(quotes.fee ?: 0.0)
+        val totalPayment = request.amount / rate.toBigDecimal() + fee
 
         return CompareItemResponse(
             logo = provider.logo.orEmpty(),
-            exchangeRate = rate,
-            transferFee = BigDecimal(0.0),
-            totalPayment = appFormatter.formatAmount(request.amount * BigDecimal(rate)),
-            loss = BigDecimal(0.0)
+            exchangeRate = BigDecimal.valueOf(rate),
+            transferFee = appFormatter.formatAmount(fee),
+            totalPayment = appFormatter.formatAmount(totalPayment),
+            loss = appFormatter.formatAmount(ohn?.let { totalPayment - it.totalPayment } ?: BigDecimal(0.0))
         )
     }
+
 }

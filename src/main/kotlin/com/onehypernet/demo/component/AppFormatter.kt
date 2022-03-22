@@ -14,6 +14,9 @@ import java.time.temporal.ChronoUnit
 class AppFormatter {
     companion object {
         const val UTC_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+
+        //2022-03-22T12:06:12Z
+        const val UTC_PATTERN1 = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     }
 
     fun formatDate(date: LocalDateTime): String {
@@ -81,7 +84,11 @@ class AppFormatter {
 
     fun formatTimeAgo(fromDateTime: String?): String {
         fromDateTime ?: return "Jut now"
-        val dateTime = LocalDateTime.parse(fromDateTime, DateTimeFormatter.ofPattern(UTC_PATTERN))
+        val dateTime = try {
+            LocalDateTime.parse(fromDateTime, DateTimeFormatter.ofPattern(UTC_PATTERN))
+        } catch (e: Throwable) {
+            LocalDateTime.parse(fromDateTime, DateTimeFormatter.ofPattern(UTC_PATTERN1))
+        }
         return formatTimeAgo(dateTime)
     }
 }
