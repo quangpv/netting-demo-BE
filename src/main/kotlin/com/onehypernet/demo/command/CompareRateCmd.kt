@@ -75,7 +75,7 @@ class CompareRateCmd(
             )
 
         val requestAmount = request.amount / (interbankRate * (BigDecimal.valueOf(1) - margin))
-        if (requestAmount.compareTo(BigDecimal.valueOf(0.0)) == 0)
+        if (requestAmount.compareTo(BigDecimal(0.0)) == 0)
             throws("Send amount of ${request.amount} = 0")
 
         val wise1 = wiseApi.getRate(request.homeCurrency, request.invoiceCurrency, requestAmount).call()
@@ -96,7 +96,8 @@ class CompareRateCmd(
             invoiceCurrency = request.invoiceCurrency,
             homeCurrency = request.homeCurrency,
             compares = providers.mapNotNull {
-                createComparison(it, request, ohnComparison)
+                if (it.id == INTERBANK_ID) null else
+                    createComparison(it, request, ohnComparison)
             } + ohnComparison
         )
     }
