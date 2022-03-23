@@ -37,8 +37,8 @@ class GetNettingCycleOverviewCmd(
             pay += it.payAmount
             fee += it.totalFeeBefore
             feeSaved.savedInMonth += it.totalFeeBefore - it.totalFeeAfter
-            cashSaved.savedInMonth += it.totalCashBefore - it.totalCashAfter
         }
+        cashSaved.savedInMonth = receive
 
         previousMonths.forEach {
             val month = appFormatter.formatMonth(it)
@@ -47,7 +47,7 @@ class GetNettingCycleOverviewCmd(
             var cashSavedAmount = BigDecimal(0.0)
             reports.forEach { report ->
                 feeSavedAmount += report.totalFeeBefore - report.totalFeeAfter
-                cashSavedAmount += report.totalCashBefore - report.totalCashAfter
+                cashSavedAmount += report.receiveAmount
             }
             feeSaved.savedList.add(
                 SavedByMonthResponse(

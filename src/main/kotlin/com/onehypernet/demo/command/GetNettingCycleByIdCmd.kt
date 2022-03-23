@@ -79,8 +79,7 @@ class GetNettingCycleByIdCmd(
             transactionCount,
             report.numOfCounterParty
         )
-        val savingFeePercent = (if (report.totalFeeBefore.compareTo(BigDecimal(0.0)) == 0) 1.0
-        else (report.totalFeeAfter / report.totalFeeBefore)).toDouble() * 100
+        val savingFeePercent = reportCalculator.calculateSavingPercent(report.totalFeeBefore, report.totalFeeAfter)
 
         val savingFee = EstimatedSavingResponse(
             before = report.totalFeeBefore,
@@ -89,13 +88,14 @@ class GetNettingCycleByIdCmd(
             savingPercent = appFormatter.formatPercent(savingFeePercent)
         )
 
-        val savingCashPercent = (if (report.totalCashBefore.compareTo(BigDecimal(0.0)) == 0) 1.0
-        else report.totalCashAfter / report.totalCashBefore).toDouble() * 100
+        val totalCashBefore = payable.amount
+        val totalCashAfter = payable.amount - receivable.amount
+        val savingCashPercent = reportCalculator.calculateSavingPercent(totalCashBefore, totalCashAfter)
 
         val savingCash = EstimatedSavingResponse(
-            before = report.totalCashBefore,
-            after = report.totalCashAfter,
-            savingAmount = report.totalCashBefore - report.totalCashAfter,
+            before = totalCashBefore,
+            after = totalCashAfter,
+            savingAmount = totalCashBefore - totalCashAfter,
             savingPercent = appFormatter.formatPercent(savingCashPercent)
         )
 
@@ -110,11 +110,11 @@ class GetNettingCycleByIdCmd(
             ),
             fees = BeforeAfterResponse(
                 report.totalFeeBefore,
-                report.totalCashAfter
+                report.totalFeeAfter
             ),
             cashOutFlow = BeforeAfterResponse(
-                report.totalCashBefore,
-                report.totalCashAfter
+                totalCashBefore,
+                totalCashAfter
             )
         )
         val settlementDate = if (netting.status == NettingStatus.Settled)

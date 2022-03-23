@@ -12,6 +12,7 @@ data class RateCompareResponse(
 
 data class CompareItemResponse(
     val logo: String,
+    val name: String,
     val exchangeRate: BigDecimal,
     val transferFee: BigDecimal,
     val totalPayment: BigDecimal,

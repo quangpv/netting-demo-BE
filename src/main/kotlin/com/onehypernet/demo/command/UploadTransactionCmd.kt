@@ -54,7 +54,6 @@ open class UploadTransactionCmd(
         val currencies = hashSetOf<String>()
 
         var totalFeeBefore = BigDecimal(0.0)
-        var totalCashBefore = BigDecimal(0.0)
 
         transactions.forEach {
             val localAmount = converter.getLocal(it.amount, it.currency)
@@ -72,7 +71,6 @@ open class UploadTransactionCmd(
             }
             counterParty.add(it.counterPartyName)
             currencies.add(it.currency)
-            totalCashBefore += localAmount
 
             nettedTrans.add(
                 NettedTransactionEntity(
@@ -91,7 +89,6 @@ open class UploadTransactionCmd(
             )
         }
         val totalFeeAfter = converter.generateTotalFeeAfter(totalFeeBefore)
-        val totalCashAfter = converter.generateTotalCashAfter(totalFeeBefore)
 
         val report = NettingReportEntity(
             nettingId = nettingId,
@@ -108,8 +105,6 @@ open class UploadTransactionCmd(
             numOfCurrencyAfter = 1,
             totalFeeBefore = appFormatter.formatAmount(totalFeeBefore),
             totalFeeAfter = appFormatter.formatAmount(totalFeeAfter),
-            totalCashBefore = appFormatter.formatAmount(totalCashBefore),
-            totalCashAfter = appFormatter.formatAmount(totalCashAfter),
         )
         nettingReportRepository.save(report)
         nettedTransactionRepository.saveAll(nettedTrans)

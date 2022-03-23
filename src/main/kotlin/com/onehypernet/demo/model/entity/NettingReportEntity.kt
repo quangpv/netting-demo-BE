@@ -45,11 +45,6 @@ data class NettingReportEntity(
     @Column(name = "total_fee_after")
     var totalFeeAfter: BigDecimal = BigDecimal(0.0),
 
-    @Column(name = "total_cash_before")
-    var totalCashBefore: BigDecimal = BigDecimal(0.0),
-    @Column(name = "total_cash_after")
-    var totalCashAfter: BigDecimal = BigDecimal(0.0),
-
     @Column(name = "settle_date")
     var settledDate: LocalDateTime? = null,
     @Column(name = "create_at")

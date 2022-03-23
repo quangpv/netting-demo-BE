@@ -1,5 +1,6 @@
 package com.onehypernet.demo.component
 
+import com.onehypernet.demo.extension.safe
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -33,8 +34,8 @@ class AppFormatter {
         return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date)
     }
 
-    fun formatAmount(amount: BigDecimal): BigDecimal {
-        return amount.setScale(2, RoundingMode.HALF_UP)
+    fun formatAmount(amount: BigDecimal?): BigDecimal {
+        return amount.safe().setScale(2, RoundingMode.HALF_UP)
     }
 
     fun formatPercent(percent: Double): Double {

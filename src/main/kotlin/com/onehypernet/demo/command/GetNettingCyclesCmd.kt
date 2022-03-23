@@ -3,11 +3,11 @@ package com.onehypernet.demo.command
 import com.onehypernet.demo.AppConst
 import com.onehypernet.demo.component.AppFormatter
 import com.onehypernet.demo.datasource.NettingCycleDao
+import com.onehypernet.demo.extension.divideTo
 import com.onehypernet.demo.extension.safe
 import com.onehypernet.demo.model.entity.NettingCycleEntity
 import com.onehypernet.demo.model.entity.NettingReportEntity
 import com.onehypernet.demo.model.enumerate.NettingStatus
-import com.onehypernet.demo.model.enumerate.SettleStatus
 import com.onehypernet.demo.model.enumerate.UserRole
 import com.onehypernet.demo.model.request.PagingRequest
 import com.onehypernet.demo.model.response.Amount
@@ -18,7 +18,6 @@ import com.onehypernet.demo.repository.NettingReportRepository
 import com.onehypernet.demo.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
 import kotlin.streams.toList
 
 @Service
@@ -62,16 +61,16 @@ class GetNettingCyclesCmd(
             settlementDate = if (entity.status == NettingStatus.Settled)
                 appFormatter.formatDate(entity.updateAt)
             else null,
-            receivable = Amount(localCurrency, report?.receiveAmount ?: BigDecimal(0.0)),
-            payable = Amount(localCurrency, report?.payAmount ?: BigDecimal(0.0)),
+            receivable = Amount(localCurrency, appFormatter.formatAmount(report?.receiveAmount)),
+            payable = Amount(localCurrency, appFormatter.formatAmount(report?.payAmount)),
             transactionCount = report?.let {
                 it.payTransactions + it.receiveTransactions
             } ?: 0,
             savingFee = Amount(localCurrency, report?.let {
-                it.totalFeeBefore - it.totalFeeAfter
+                appFormatter.formatAmount(it.totalFeeBefore - it.totalFeeAfter)
             }.safe(0.0)),
             savingCash = Amount(localCurrency, report?.let {
-                it.totalCashBefore - it.totalCashAfter
+                appFormatter.formatAmount(it.receiveAmount.divideTo(it.payAmount))
             }.safe(0.0))
         )
     }

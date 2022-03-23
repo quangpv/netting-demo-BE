@@ -9,7 +9,6 @@ interface AmountConverter {
     fun getLocal(amount: BigDecimal, currency: String): BigDecimal
     fun getFee(amount: BigDecimal, currency: String): BigDecimal
     fun generateTotalFeeAfter(totalFeeBefore: BigDecimal): BigDecimal
-    fun generateTotalCashAfter(totalCashBefore: BigDecimal): BigDecimal
 }
 
 class AmountConverterImpl(
@@ -57,10 +56,6 @@ class AmountConverterImpl(
     }
 
     override fun generateTotalFeeAfter(totalFeeBefore: BigDecimal): BigDecimal {
-        return totalFeeBefore * BigDecimal(Random.nextDouble(5.0, 95.0) / 100)
-    }
-
-    override fun generateTotalCashAfter(totalCashBefore: BigDecimal): BigDecimal {
-        return totalCashBefore * BigDecimal(Random.nextDouble(5.0, 95.0) / 100)
+        return totalFeeBefore * BigDecimal.valueOf(Random.nextDouble(5.0, 95.0) / 100)
     }
 }
