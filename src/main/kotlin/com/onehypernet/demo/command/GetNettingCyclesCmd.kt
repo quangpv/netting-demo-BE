@@ -70,7 +70,7 @@ class GetNettingCyclesCmd(
                 appFormatter.formatAmount(it.totalFeeBefore - it.totalFeeAfter)
             }.safe(0.0)),
             savingCash = Amount(localCurrency, report?.let {
-                appFormatter.formatAmount(it.payAmount - it.receiveAmount)
+                appFormatter.formatAmount(it.receiveAmount - it.payAmount)
             }.safe(0.0))
         )
     }
