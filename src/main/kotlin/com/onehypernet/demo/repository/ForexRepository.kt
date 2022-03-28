@@ -19,7 +19,7 @@ class ForexRepository(
 ) {
 
     private fun shouldFetch(): Boolean {
-        return System.currentTimeMillis() - lastFetchCache[AppConst.FOREX] > 5 * 60 * 1000
+        return System.currentTimeMillis() - lastFetchCache[AppConst.FOREX] > 5 * 60 * 1000 || forexDao.count() == 0L
     }
 
     private fun fetchAll(date: String) {
