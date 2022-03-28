@@ -19,7 +19,9 @@ class CreateNettingCycleCmd(
 ) {
     operator fun invoke(request: NettingCycleRequest): NettingCycleResponse {
         validator.checkNettingGroup(request.group)
-        val id = nettingIdGenerator.generate()
+        val lastId = nettingCycleDao.findLast()?.id
+        val id = nettingIdGenerator.generate(lastId)
+
         val newCycle = NettingCycleEntity(
             id = id,
             nettingGroup = request.group.trim(),

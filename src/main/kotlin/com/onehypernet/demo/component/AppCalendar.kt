@@ -11,6 +11,7 @@ class AppCalendar {
     companion object {
         const val DATE_PATTERN = "yyyy-MM-dd"
         const val DATE_PATTERN1 = "dd-MM-yyyy"
+        const val DATE_PATTERN2 = "dd-MM-yy"
     }
 
     fun nowStr(): String {
@@ -21,7 +22,11 @@ class AppCalendar {
         return try {
             DateTimeFormatter.ofPattern(DATE_PATTERN).let { LocalDate.parse(date, it).atStartOfDay() }
         } catch (e: Throwable) {
-            DateTimeFormatter.ofPattern(DATE_PATTERN1).let { LocalDate.parse(date, it).atStartOfDay() }
+            try {
+                DateTimeFormatter.ofPattern(DATE_PATTERN1).let { LocalDate.parse(date, it).atStartOfDay() }
+            } catch (e1: Throwable) {
+                DateTimeFormatter.ofPattern(DATE_PATTERN2).let { LocalDate.parse(date, it).atStartOfDay() }
+            }
         }
     }
 

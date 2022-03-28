@@ -9,6 +9,10 @@ interface ReportCalculator {
     fun getFeeAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
     fun getSavingAmount(before: BigDecimal, after: BigDecimal): BigDecimal
     fun getCashAfterAmount(before: BigDecimal, param: ReportParamEntity): BigDecimal
+
+    /**
+     * 35% * fee_savings + 35% * cashflow_savings + 30% * min of (log(transaction count uploaded by user) or 95%)
+     */
     fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double
     fun calculateSavingPercent(totalBefore: BigDecimal, totalAfter: BigDecimal): Double
 }
@@ -28,8 +32,7 @@ class ReportCalculatorImpl : ReportCalculator {
     }
 
     override fun getPotential(savingCash: BigDecimal, savingFee: BigDecimal, transactionCount: Int): Double {
-        val potential = 0.35 * (savingCash + savingFee).toDouble() + (0.3 * log(transactionCount.toDouble(), 300.0))
-        return minOf(potential, 0.95)
+        return 0.35 * (savingCash + savingFee).toDouble() + (0.3 * minOf(log(transactionCount.toDouble(), 300.0), 0.95))
     }
 
     override fun calculateSavingPercent(totalBefore: BigDecimal, totalAfter: BigDecimal): Double {

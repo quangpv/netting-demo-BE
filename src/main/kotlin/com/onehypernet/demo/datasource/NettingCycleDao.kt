@@ -22,4 +22,7 @@ interface NettingCycleDao : JpaRepository<NettingCycleEntity, String> {
         nativeQuery = true
     )
     fun findAllByUser(userId: String, pageable: Pageable): Page<NettingCycleEntity>
+
+    @Query("select * from NETTING_CYCLE order by CREATE_AT desc limit 1", nativeQuery = true)
+    fun findLast(): NettingCycleEntity?
 }

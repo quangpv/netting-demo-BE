@@ -21,9 +21,7 @@ data class NettingCycleDetailResponse(
 
     val savingFee: EstimatedSavingResponse? = null,
     val savingCash: EstimatedSavingResponse? = null,
-    /**
-     * 35% * fee_savings + 35% * cashflow_savings + 30% * min of (log(transaction count uploaded by user) or 95%)
-     */
+
     val potential: Double? = null,
 
     val summary: SummaryReportResponse? = null,
