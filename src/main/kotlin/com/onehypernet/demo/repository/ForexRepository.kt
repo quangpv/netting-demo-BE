@@ -94,6 +94,8 @@ class ForexRepository(
     }
 
     fun tryFetchAll() {
-        fetchAll(appCalendar.nowStr())
+        if (shouldFetch()) {
+            fetchAll(appCalendar.nowStr())
+        }
     }
 }
