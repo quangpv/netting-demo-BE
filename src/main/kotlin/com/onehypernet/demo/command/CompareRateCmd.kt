@@ -95,9 +95,9 @@ class CompareRateCmd(
             lastTime = lastTime,
             invoiceCurrency = request.invoiceCurrency,
             homeCurrency = request.homeCurrency,
-            compares = providers.mapNotNull {
+            compares = listOf(ohnComparison) + providers.mapNotNull {
                 createComparison(it, request, ohnComparison)
-            } + ohnComparison
+            }
         )
     }
 
