@@ -8,6 +8,7 @@ import com.onehypernet.demo.datasource.LastFetchCache
 import com.onehypernet.demo.extension.call
 import com.onehypernet.demo.model.entity.ForexEntity
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,6 +18,11 @@ class ForexRepository(
     private val forexApi: ForexApi,
     private val appCalendar: AppCalendar,
 ) {
+
+    @Scheduled(cron = "0 0 8 ? * * *")
+    private fun sync() {
+        fetchAll(appCalendar.nowStr())
+    }
 
     private fun shouldFetch(): Boolean {
         return System.currentTimeMillis() - lastFetchCache[AppConst.FOREX] > 5 * 60 * 1000 || forexDao.count() == 0L

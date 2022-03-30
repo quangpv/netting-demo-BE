@@ -39,7 +39,7 @@ open class UploadTransactionCmd(
 
         val transactions = uploadedTransactionFactory.createList(file.inputStream)
 
-        val converter = AmountConverterImpl(ourCurrency, nettingParamRepository.findAllByToday())
+        val converter = AmountConverterImpl(ourCurrency, nettingParamRepository.findAll())
 
         val nettedTrans = ArrayList<NettedTransactionEntity>(transactions.size)
 

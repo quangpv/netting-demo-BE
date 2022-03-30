@@ -19,7 +19,7 @@ class GetAllNettingParamsCmd(
         val filterLocations = csvReader.readLine(request.location).map { it.toUpperCase().trim() }
         val filterDestinations = csvReader.readLine(request.destinations).map { it.toUpperCase().trim() }
 
-        val result = nettingParamRepository.findAllByToday()
+        val result = nettingParamRepository.findAll()
 
         val shouldFilter = filterFroms.isNotEmpty()
                 || filterTos.isNotEmpty()

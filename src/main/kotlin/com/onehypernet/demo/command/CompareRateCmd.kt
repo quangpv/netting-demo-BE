@@ -85,7 +85,7 @@ class CompareRateCmd(
             ?: notFoundComparison(request, requestAmount)
 
         val providers = wise1.providers.filter { it.partner != true }
-        val ohnComparison = createComparison(ohnProvider, request)
+        val ohnComparison = createOHNComparison(ohnProvider, request)
             ?: notFoundComparison(request, requestAmount)
 
         val lastTime = appFormatter.formatTimeAgo(ohnProvider.quotes?.firstOrNull()?.dateCollected)
@@ -96,8 +96,7 @@ class CompareRateCmd(
             invoiceCurrency = request.invoiceCurrency,
             homeCurrency = request.homeCurrency,
             compares = providers.mapNotNull {
-                if (it.id == INTERBANK_ID) null else
-                    createComparison(it, request, ohnComparison)
+                createComparison(it, request, ohnComparison)
             } + ohnComparison
         )
     }
@@ -129,4 +128,21 @@ class CompareRateCmd(
         )
     }
 
+    private fun createOHNComparison(
+        provider: ProviderDTO,
+        request: RateCompareRequest,
+    ): CompareItemResponse? {
+        val quotes = provider.quotes?.firstOrNull() ?: return null
+        val rate = quotes.rate ?: return null
+        val totalPayment = request.amount / rate.toBigDecimal()
+
+        return CompareItemResponse(
+            logo = "",
+            name = "OneHypernet",
+            exchangeRate = BigDecimal.valueOf(rate),
+            transferFee = 0.0.toBigDecimal(),
+            totalPayment = appFormatter.formatAmount(totalPayment),
+            loss = 0.0.toBigDecimal()
+        )
+    }
 }

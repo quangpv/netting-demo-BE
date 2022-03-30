@@ -59,7 +59,7 @@ open class UploadNettingParamsCmd(
             )
         }
 
-        nettingParamRepository.deleteAllCreatedByToDay()
+        nettingParamRepository.removeAll()
         nettingParamRepository.saveAll(params)
     }
 }

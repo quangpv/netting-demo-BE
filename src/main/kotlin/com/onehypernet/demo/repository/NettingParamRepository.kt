@@ -37,4 +37,12 @@ class NettingParamRepository(
     fun findAllByDate(createAt: LocalDateTime): List<NettingParamEntity> {
         return nettingParamDao.findAllByDate(appFormatter.formatRequestDate(createAt))
     }
+
+    fun removeAll() {
+        nettingParamDao.deleteAll()
+    }
+
+    fun findAll(): List<NettingParamEntity> {
+        return nettingParamDao.findAll()
+    }
 }
