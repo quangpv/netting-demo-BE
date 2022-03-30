@@ -19,7 +19,7 @@ class ForexRepository(
     private val appCalendar: AppCalendar,
 ) {
 
-    @Scheduled(cron = "0 0 8 ? * * *")
+    @Scheduled(cron = "0 0 8-9 * * *")
     private fun sync() {
         fetchAll(appCalendar.nowStr())
     }
@@ -29,6 +29,7 @@ class ForexRepository(
     }
 
     private fun fetchAll(date: String) {
+        println("Fetch all fx rate")
         val result = forexApi.getGroup(date).call()?.results.orEmpty()
         val entities = result.map {
             val symbols = it.exchangeSymbols.orEmpty().removePrefix("C:")
