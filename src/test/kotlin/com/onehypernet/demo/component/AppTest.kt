@@ -15,4 +15,14 @@ class AppTest {
         }
         println(dateTime)
     }
+
+    @Test
+    fun test1() {
+        var date = AppCalendar().dateOf("1-1-2022")
+        println(date)
+        date = AppCalendar().dateOf("01-1-2022")
+        println(date)
+        date = AppCalendar().dateOf("01-10-22")
+        println(date)
+    }
 }

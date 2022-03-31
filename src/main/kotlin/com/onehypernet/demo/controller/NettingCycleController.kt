@@ -25,14 +25,12 @@ class NettingCycleController(
     private val tokenProvider: JwtTokenProvider
 ) {
 
-    @Guard(UserRole.Admin)
     @PostMapping("")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun create(@RequestBody request: NettingCycleRequest): NettingCycleResponse {
         return createNettingCycleCmd(request)
     }
 
-    @Guard(UserRole.Admin)
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun delete(@PathVariable id: String) {
