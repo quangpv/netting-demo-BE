@@ -22,7 +22,7 @@ data class NettingCycleDetailResponse(
     val savingFee: EstimatedSavingResponse? = null,
     val savingCash: EstimatedSavingResponse? = null,
 
-    val potential: Double? = null,
+    val potentialPercent: Double? = null,
 
     val summary: SummaryReportResponse? = null,
     val nettedTransactions: List<NettedTransactionResponse> = emptyList()

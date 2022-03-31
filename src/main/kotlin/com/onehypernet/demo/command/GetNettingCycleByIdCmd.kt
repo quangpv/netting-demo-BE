@@ -130,7 +130,7 @@ class GetNettingCycleByIdCmd(
             netCashFlow = cashFlow,
             savingFee = savingFee,
             savingCash = savingCash,
-            potential = reportCalculator.getPotential(
+            potentialPercent = reportCalculator.getPotentialPercent(
                 savingCash.savingPercent,
                 savingFee.savingPercent,
                 transactionCount
