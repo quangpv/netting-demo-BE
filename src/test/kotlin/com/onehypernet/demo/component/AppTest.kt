@@ -24,5 +24,7 @@ class AppTest {
         println(date)
         date = AppCalendar().dateOf("01-10-22")
         println(date)
+        date = AppCalendar().dateOf("01/4/22")
+        println(date)
     }
 }

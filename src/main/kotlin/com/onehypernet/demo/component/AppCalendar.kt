@@ -27,7 +27,11 @@ class AppCalendar {
             DateTimeFormatter.ofPattern(DATE_PATTERN).let { LocalDate.parse(date, it).atStartOfDay() }
         } catch (e: Throwable) {
             try {
-                var (firstSeg, secondSeg, lastSeg) = date.split("-")
+                var (firstSeg, secondSeg, lastSeg) = if (date.contains("/")) {
+                    date.split("/")
+                } else {
+                    date.split("-")
+                }
                 if (firstSeg.length < 2) {
                     firstSeg = decimalFormat.format(firstSeg.toIntOrNull())
                 }
