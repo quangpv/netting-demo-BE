@@ -3,6 +3,8 @@ package com.onehypernet.demo.controller
 import com.onehypernet.demo.command.AdminLoginCmd
 import com.onehypernet.demo.command.PartyLoginCmd
 import com.onehypernet.demo.command.PartyRegistryCmd
+import com.onehypernet.demo.guard.Guard
+import com.onehypernet.demo.model.enumerate.UserRole
 import com.onehypernet.demo.model.request.AccountRequest
 import com.onehypernet.demo.model.request.PartyLoginRequest
 import com.onehypernet.demo.model.request.PartyRegistryRequest
@@ -31,6 +33,7 @@ class AuthorController(
         return partyLoginCmd(request)
     }
 
+    @Guard(UserRole.Admin)
     @PostMapping("party/registry")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun userRegistry(@RequestBody request: PartyRegistryRequest):LoginResponse {

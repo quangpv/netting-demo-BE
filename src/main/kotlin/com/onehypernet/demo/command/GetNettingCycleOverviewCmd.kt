@@ -18,6 +18,31 @@ class GetNettingCycleOverviewCmd(
     private val userRepository: UserRepository,
     private val nettingReportRepository: NettingReportRepository
 ) {
+    companion object {
+        val FAKE_FEE = hashMapOf(
+            9 to 851.36,
+            10 to 1185.94,
+            11 to 1658.15,
+            12 to 2563.82,
+            1 to 3254.21,
+            2 to 3687.25,
+            3 to 4123.25,
+            4 to 4536.78,
+            5 to 4825.36,
+        )
+        val FAKE_CASH = hashMapOf(
+            9 to 25485.91,
+            10 to 36258.78,
+            11 to 41278.14,
+            12 to 48982.56,
+            1 to 57841.87,
+            2 to 69785.45,
+            3 to 79639.65,
+            4 to 89525.78,
+            5 to 115785.21,
+        )
+    }
+
     operator fun invoke(userId: String): NettingOverviewResponse {
         val thisMonth = appCalendar.nowMonth()
         val thisMonthStr = appFormatter.formatMonth(thisMonth)
@@ -42,6 +67,7 @@ class GetNettingCycleOverviewCmd(
 
         previousMonths.forEach {
             val month = appFormatter.formatMonth(it)
+            val monthValue = it.monthValue
             val reports = nettingReportRepository.findAllByMonthAndUser(month, userId)
             var feeSavedAmount = BigDecimal(0.0)
             var cashSavedAmount = BigDecimal(0.0)
@@ -49,6 +75,12 @@ class GetNettingCycleOverviewCmd(
                 feeSavedAmount += report.totalFeeBefore - report.totalFeeAfter
                 cashSavedAmount += report.receiveAmount
             }
+
+            if (feeSavedAmount == BigDecimal.ZERO && cashSavedAmount == BigDecimal.ZERO) {
+                cashSavedAmount = FAKE_CASH[monthValue]?.toBigDecimal() ?: BigDecimal.ZERO
+                feeSavedAmount = FAKE_FEE[monthValue]?.toBigDecimal() ?: BigDecimal.ZERO
+            }
+
             feeSaved.savedList.add(
                 SavedByMonthResponse(
                     month = month,
