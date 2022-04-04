@@ -89,7 +89,7 @@ class GetNettingCycleByIdCmd(
         )
 
         val totalCashBefore = payable.amount
-        val totalCashAfter = minOf(payable.amount - receivable.amount, BigDecimal(0.0))
+        val totalCashAfter = maxOf(payable.amount - receivable.amount, BigDecimal(0.0))
         val savingCashPercent = reportCalculator.calculateSavingPercent(totalCashBefore, totalCashAfter)
 
         val savingCash = EstimatedSavingResponse(
