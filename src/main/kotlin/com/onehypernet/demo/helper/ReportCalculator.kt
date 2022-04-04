@@ -38,12 +38,12 @@ class ReportCalculatorImpl : ReportCalculator {
     ): Double {
         val rate = 0.35 * (savingCashPercent + savingFeePercent) / 100 + (0.3 * minOf(
             log(transactionCount.toDouble(), 300.0),
-            95.0
+            0.95
         ))
         return rate * 100
     }
 
     override fun calculateSavingPercent(totalBefore: BigDecimal, totalAfter: BigDecimal): Double {
-        return totalAfter.divideTo(totalBefore).toDouble() * 100
+        return (totalBefore - totalAfter).divideTo(totalBefore).toDouble() * 100
     }
 }
