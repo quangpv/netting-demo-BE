@@ -56,6 +56,6 @@ class AmountConverterImpl(
     }
 
     override fun generateTotalFeeAfter(totalFeeBefore: BigDecimal): BigDecimal {
-        return totalFeeBefore * BigDecimal.valueOf(Random.nextDouble(5.0, 95.0) / 100)
+        return totalFeeBefore * BigDecimal.valueOf(Random.nextDouble(2.0, 8.0) / 100)
     }
 }

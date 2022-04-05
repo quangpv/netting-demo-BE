@@ -57,9 +57,10 @@ open class UploadTransactionCmd(
 
         transactions.forEach {
             val localAmount = converter.getLocal(it.amount, it.currency)
-            val feeAmount = converter.getFee(it.amount, it.currency)
+            var feeAmount = BigDecimal.ZERO
 
             if (it.type == TransactionType.Payable) {
+                feeAmount = converter.getFee(it.amount, it.currency)
                 payAmount += localAmount
                 payTransactions++
                 counterPartyPay.add(it.counterPartyName)
